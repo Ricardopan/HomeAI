@@ -607,7 +607,7 @@ function renderResult(){
 
     <button class="btn btn-p" onclick="restart()">🔄 重新测试</button>
     <button class="btn btn-s" onclick="share()">📤 分享结果</button>
-    <div class="footnote">基于小红书60+篇笔记 + 真实190㎡精装房案例 + 华为/Aqara真实报价<br>「决策方法论」IP 第一个工具 · 太子出品 · 仅供参考</div>
+    <div class="footnote">基于小红书60+篇笔记 + 真实190㎡精装房案例 + 华为/Aqara真实报价<br>「决策方法论」IP 第一个工具 · designed by RicardoPan · 仅供参考</div>
   </div>`;
 }
 
@@ -623,20 +623,26 @@ function share(){
   const scores=score(),ranked=rank(scores),top=ranked[0];
   const total=ranked.reduce((s,b)=>s+Math.max(0,b.score),0);
   const pct=Math.round((top.score/total)*100);
+  // 契合度映射到高分区(70-99),避免"30%"读起来像不太契合; 领先越多越接近99
+  const fit=Math.min(99,72+Math.round(pct/2));
   const budget=estBudget(top.id);
   const rs=reasons(top.id);
   const info=ans.info||{},f=ans.func||{};
   const URL="https://ricardopan.github.io/HomeAI/";
   const px=top.emoji, nm=top.name, pr=top.price;
-  // 本地生成二维码dataURL(内嵌qrcodejs,不依赖外网),保证截图时二维码一定能显示
-  function qrDataURL(text){
+  // 本地生成二维码(纯SVG文本,不依赖canvas绘制,任何环境100%显示)
+  function qrSVG(text,size){
     try{
-      const c=document.createElement('canvas');c.width=120;c.height=120;
-      new QRCode(c,{text:text,width:120,height:120,colorDark:'#2a2a2a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
-      return c.toDataURL('image/png');
+      const tmp=document.createElement('div');
+      const qr=new QRCode(tmp,{text:text,width:size,height:size,colorDark:'#2a2a2a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+      const m=qr._oQRCode.modules, n=m.length;
+      const cell=size/n;
+      let rects='';
+      for(let r=0;r<n;r++){for(let c=0;c<n;c++){if(m[r]&&m[r][c]){rects+='<rect x="'+(c*cell).toFixed(2)+'" y="'+(r*cell).toFixed(2)+'" width="'+Math.ceil(cell)+'" height="'+Math.ceil(cell)+'"/>'}}}
+      return 'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#ffffff"/>'+rects+'</svg>');
     }catch(e){return ''}
   }
-  const qrSrc=qrDataURL(URL);
+  const qrSrc=qrSVG(URL,220);
   // 需求标签(压缩到一张,优先面积+房型+手机+已选功能)
   const funcNames={curtain:'🪟 电动窗帘',light:'💡 智能照明',screen:'🖥️ 中控屏',scene:'🎬 智能场景',lock:'🔐 智能门锁',sec:'🛡️ 安防监控',hvac:'🌡️ 冷暖联动'};
   const selFunc=Object.keys(f).filter(k=>f[k]).map(k=>funcNames[k]).join(' · ');
@@ -646,35 +652,42 @@ function share(){
   const tags=[tagHtml.a,tagHtml.b,tagHtml.c,selFunc].filter(Boolean).map(t=>`<span style="display:inline-block;background:#f2f5ef;border:1px solid #e0e6d8;color:#6a7a5a;border-radius:4px;padding:3px 8px;font-size:10.5px;margin:2px">${t}</span>`).join("");
   // 排名:第1名高亮首选,其余合并成一行紧凑小字
   const others=ranked.slice(1).map((b,i)=>`<span style="color:#8a8377;font-size:11px">${b.emoji}${b.name}</span>`).join('<span style="color:#cfc9bd;margin:0 5px">·</span>');
-  const rsHtml=rs.slice(0,2).map(r=>`<div style="font-size:13px;color:#444;line-height:1.6;margin-bottom:5px"><span style="color:#b0a89a">▸</span> ${r.t}</div>`).join("");
+  const rsHtml=rs.slice(0,2).map(r=>`<div class="rs"><em>▸</em>${r.t}</div>`).join("");
   const doc=`<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我的全屋智能推荐 · ${nm}</title>
 <style>
-body{margin:0;background:#f2f0ea;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;display:flex;justify-content:center;align-items:flex-start;padding:16px}
-.card{width:400px;background:#fff;border-radius:18px;padding:20px 24px 16px;box-shadow:0 6px 24px rgba(0,0,0,0.08);text-align:center}
-.topline{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#b0a89a;letter-spacing:1px;margin-bottom:10px}
-.brand{display:flex;align-items:center;justify-content:center;gap:14px;margin:4px 0 2px}
-.brand .emo{font-size:44px;line-height:1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{margin:0;background:#edeae3;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;display:flex;justify-content:center;align-items:flex-start;padding:18px 12px}
+.card{width:408px;background:#fff;border-radius:20px;padding:22px 24px 16px;box-shadow:0 10px 34px rgba(60,50,30,0.12);text-align:center;border:1px solid rgba(0,0,0,0.03)}
+.topline{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:#b3ac9e;letter-spacing:1.5px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed #ece7dd}
+.topline b{color:#8a8377;font-weight:600}
+.brand{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 4px}
+.brand .emo{font-size:46px;line-height:1}
 .brand .txt{text-align:left}
-.brand .nm{font-size:24px;font-weight:700;color:#333;line-height:1.15}
-.brand .tg{font-size:11px;color:#a09888;margin-top:2px}
-.match{display:inline-block;background:#5a6b4a;color:#fff;border-radius:999px;padding:4px 14px;font-size:12px;font-weight:600;margin:8px 0 6px;letter-spacing:1px}
-.pri{font-size:20px;font-weight:700;color:#5a6b4a}
-.pricen{font-size:10.5px;color:#b0a89a;margin:2px 0 10px}
-.block{background:#faf9f5;border-radius:10px;padding:10px 12px;margin-bottom:8px;text-align:left}
-.sec{font-size:10.5px;color:#8a8377;font-weight:600;letter-spacing:1px;margin-bottom:6px}
-.rank1{display:flex;align-items:center;gap:8px;font-size:12px}
-.rank1 .fir{background:#5a6b4a;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600}
-.rank1 .em{font-size:16px}
-.others{font-size:10.5px;color:#8a8377;text-align:left;margin-top:6px;line-height:1.7}
-.qr{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 0 2px;border-top:1px solid #f0ece4}
-.qr img{width:110px;height:110px;border-radius:8px;background:#fff;padding:6px}
-.qrtext{font-size:10.5px;color:#8a8377;text-align:left;line-height:1.6}
+.brand .nm{font-size:27px;font-weight:700;color:#2f2b24;line-height:1.15;letter-spacing:0.5px}
+.brand .tg{font-size:11px;color:#a69d8c;margin-top:3px;letter-spacing:0.5px}
+.match{display:inline-block;background:linear-gradient(135deg,#5a6b4a,#4a5a3d);color:#fff;border-radius:999px;padding:6px 16px;font-size:12px;font-weight:600;margin:10px 0 8px;letter-spacing:1px;box-shadow:0 2px 8px rgba(90,107,74,0.25)}
+.pri{font-size:22px;font-weight:700;color:#4a5a3d;letter-spacing:0.5px}
+.pricen{font-size:10.5px;color:#b3ac9e;margin:3px 0 12px}
+.block{background:#faf9f5;border-radius:12px;padding:11px 14px;margin-bottom:9px;text-align:left;border:1px solid #f1ede5}
+.sec{font-size:10.5px;color:#8a8377;font-weight:700;letter-spacing:1.5px;margin-bottom:7px;display:flex;align-items:center}
+.sec::before{content:"";display:inline-block;width:3px;height:12px;background:#8fa07e;border-radius:2px;margin-right:7px}
+.rs{font-size:13px;color:#4a463c;line-height:1.65;margin-bottom:5px}
+.rs em{font-style:normal;color:#b0a89a;margin-right:4px}
+.rank1{display:flex;align-items:center;gap:9px;font-size:12.5px}
+.rank1 .fir{background:#5a6b4a;color:#fff;border-radius:5px;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:1px}
+.rank1 .em{font-size:17px}
+.rank1 .nm{font-weight:700;color:#5a6b4a;letter-spacing:0.5px}
+.others{font-size:10.5px;color:#8a8377;text-align:left;margin-top:7px;line-height:1.8;padding-top:6px;border-top:1px dashed #ece7dd}
+.others b{color:#a69d8c;font-weight:600}
+.qr{display:flex;align-items:center;gap:14px;padding:12px 4px 4px;border-top:1px solid #f0ece4}
+.qr img{width:112px;height:112px;border-radius:10px;background:#fff;padding:7px;border:1px solid #efeae0;flex:0 0 auto}
+.qrtext{font-size:10.5px;color:#8a8377;text-align:left;line-height:1.7}
 .qrtext b{color:#5a6b4a}
-.foot{font-size:10px;color:#b0a89a;margin-top:6px;line-height:1.6}
-.credit{font-size:10px;color:#c9c2b5;letter-spacing:0.5px;text-align:right;margin-top:4px;font-style:italic}
+.foot{font-size:9.5px;color:#c0b9ac;margin-top:10px;line-height:1.6;text-align:center}
+.credit{font-size:10px;color:#c9c2b5;letter-spacing:0.8px;text-align:right;margin-top:6px;font-style:italic}
 </style></head><body>
 <div class="card">
-  <div class="topline"><span>🔮 全屋智能品牌决策器</span><span>太子出品</span></div>
+  <div class="topline"><span>🔮 全屋智能品牌决策器</span><span><b>60+</b> 真实体验校准</span></div>
   <div class="brand">
     <span class="emo">${px}</span>
     <div class="txt">
@@ -682,27 +695,27 @@ body{margin:0;background:#f2f0ea;font-family:-apple-system,BlinkMacSystemFont,'P
       <div class="tg">品牌参考价 ${pr}</div>
     </div>
   </div>
-  <div class="match">推荐 · 契合度 ${pct}%</div>
+  <div class="match">✦ 推荐契合度 ${fit}%</div>
   <div class="pri">¥${(budget.lo/10000).toFixed(1)}万 ~ ¥${(budget.hi/10000).toFixed(1)}万</div>
-  <div class="pricen">预估预算（${info.area||'190㎡'}）</div>
+  <div class="pricen">预估预算 · ${info.area||'190㎡'}</div>
   <div class="block">
     <div class="sec">为什么是它</div>
     ${rsHtml}
   </div>
   <div class="block">
     <div class="sec">品牌排名</div>
-    <div class="rank1"><span class="fir">首选</span><span class="em">${top.emoji}</span><span style="font-weight:600;color:#5a6b4a">${top.name}</span></div>
-    <div class="others">备选：${others}</div>
+    <div class="rank1"><span class="fir">首选</span><span class="em">${top.emoji}</span><span class="nm">${top.name}</span></div>
+    <div class="others"><b>备选</b>：${others}</div>
   </div>
   <div class="block">
     <div class="sec">我的需求</div>
     ${tags}
   </div>
   <div class="qr">
-    <img src="${qrSrc}" alt="二维码" style="width:110px;height:110px;background:#fff;border-radius:8px;padding:6px;display:block;margin:0 auto">
-    <div class="qrtext">扫码测一测你的全屋智能该选哪家<br><b>决策器</b> · 网页版 · 60+真实体验校准</div>
+    <img src="${qrSrc}" alt="二维码">
+    <div class="qrtext">扫码测一测<br>你的全屋智能该选哪家<br>✳ <b>决策器</b> · 网页版</div>
   </div>
-  <div class="foot">基于60+篇真实体验 + 190㎡精装房案例 + 华为/Aqara真实报价</div>
+  <div class="foot">基于 60+ 篇真实体验 · 190㎡精装房案例 · 华为/Aqara 真实报价</div>
   <div class="credit">designed by RicardoPan</div>
 </div>
 </body></html>`;
