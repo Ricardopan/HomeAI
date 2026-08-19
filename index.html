@@ -617,10 +617,69 @@ function next(){if(step<STEPS.length-1){step++;render()}else{showResult=true;ren
 function prev(){if(step>0){step--;render()}}
 function restart(){step=0;ans={};showResult=false;render()}
 function share(){
-  const scores=score(),ranked=rank(scores),top=ranked[0],budget=estBudget(top.id);
-  const text=`🔮 我的全屋智能品牌推荐：${top.emoji} ${top.name}\n📊 匹配度：${Math.round((top.score/ranked.reduce((s,b)=>s+Math.max(0,b.score),0))*100)}%\n💰 预估预算：¥${(budget.lo/10000).toFixed(1)}万~¥${(budget.hi/10000).toFixed(1)}万\n\n👉 你也来测测：全屋智能品牌决策器`;
-  if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>alert("已复制！可以分享到小红书/微信啦"))}
-  else{prompt("复制这段文字分享：",text)}
+  const scores=score(),ranked=rank(scores),top=ranked[0];
+  const total=ranked.reduce((s,b)=>s+Math.max(0,b.score),0);
+  const pct=Math.round((top.score/total)*100);
+  const budget=estBudget(top.id);
+  const rs=reasons(top.id);
+  const info=ans.info||{},f=ans.func||{},p=ans.pref||{};
+  const URL="https://ricardopan.github.io/HomeAI/";
+  const px=top.emoji, nm=top.name, tg=top.tag, pr=top.price;
+  const tagHtml=[
+    `<span style="display:inline-block;background:#f2f5ef;border:1px solid #d8dfd0;color:#5a6b4a;border-radius:999px;padding:4px 12px;font-size:12px;margin:3px">${info.area||''}</span>`,
+    `<span style="display:inline-block;background:#f2f5ef;border:1px solid #d8dfd0;color:#5a6b4a;border-radius:999px;padding:4px 12px;font-size:12px;margin:3px">${info.house||''}</span>`,
+    `<span style="display:inline-block;background:#f2f5ef;border:1px solid #d8dfd0;color:#5a6b4a;border-radius:999px;padding:4px 12px;font-size:12px;margin:3px">${info.phone||''}</span>`,
+    `<span style="display:inline-block;background:#f2f5ef;border:1px solid #d8dfd0;color:#5a6b4a;border-radius:999px;padding:4px 12px;font-size:12px;margin:3px">${info.diy||''}</span>`
+  ].join("");
+  const rankHtml=ranked.map((b,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:${i===0?'#f2f5ef':'#fff'};border:${i===0?'1px solid #7b8c7b':'1px solid #f0ece4'};border-radius:10px;margin-bottom:6px">
+      <span style="font-size:20px">${b.emoji}</span>
+      <span style="font-size:15px;font-weight:600;color:${i===0?'#5a6b4a':'#555'};flex:1">${b.name}</span>
+      <span style="font-size:13px;font-weight:700;color:#5a6b4a">${Math.round(Math.max(0,b.score)/total*100)}%</span>
+    </div>`).join("");
+  const rsHtml=rs.slice(0,3).map(r=>`<div style="font-size:14px;color:#444;line-height:1.7;margin-bottom:8px">${r.i} ${r.t}</div>`).join("");
+  const doc=`<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我的全屋智能推荐 · ${nm}</title>
+<style>
+body{margin:0;background:#f7f5f0;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;display:flex;justify-content:center;padding:24px}
+.card{width:430px;background:#fff;border-radius:20px;padding:28px 28px 22px;box-shadow:0 8px 30px rgba(0,0,0,0.08);text-align:center}
+.logo{font-size:13px;color:#b0a89a;letter-spacing:1px;margin-bottom:18px}
+.big{font-size:52px;line-height:1;margin:6px 0}
+.name{font-size:26px;font-weight:700;color:#333;margin:8px 0 2px}
+.tagline{font-size:13px;color:#a09888;margin-bottom:14px}
+.match{display:inline-block;background:#5a6b4a;color:#fff;border-radius:999px;padding:6px 16px;font-size:13px;font-weight:600;margin-bottom:16px}
+.pri{font-size:22px;font-weight:700;color:#5a6b4a;margin-bottom:4px}
+.pricen{font-size:12px;color:#b0a89a;margin-bottom:20px}
+.sec{font-size:12px;color:#8a8377;text-align:left;font-weight:600;margin:18px 0 10px;letter-spacing:1px}
+.reas{text-align:left}
+.tags{text-align:left;margin-top:8px}
+.qr{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px;padding-top:18px;border-top:1px solid #f0ece4}
+.qr img{width:96px;height:96px;border-radius:8px}
+.qrtext{font-size:12px;color:#8a8377;text-align:left;line-height:1.6}
+.foot{font-size:12px;color:#b0a89a;margin-top:20px;line-height:1.7}
+</style></head><body>
+<div class="card">
+  <div class="logo">🔮 全屋智能品牌决策器</div>
+  <div class="big">${px}</div>
+  <div class="name">${nm}</div>
+  <div class="tagline">${tg}</div>
+  <span class="match">匹配度 ${pct}%</span>
+  <div class="pri">¥${(budget.lo/10000).toFixed(1)}万 ~ ¥${(budget.hi/10000).toFixed(1)}万</div>
+  <div class="pricen">预估预算（${info.area||'190㎡'}）· 品牌参考价 ${pr}</div>
+  <div class="sec">📋 为什么是它</div>
+  <div class="reas">${rsHtml}</div>
+  <div class="sec">🏆 品牌排名</div>
+  ${rankHtml}
+  <div class="sec">🎯 我的需求</div>
+  <div class="tags">${tagHtml}</div>
+  <div class="qr">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=96x96&margin=0&data=${encodeURIComponent(URL)}" alt="二维码">
+    <div class="qrtext">扫码测一测你的<br>全屋智能该选哪家<br><b style="color:#5a6b4a">决策器</b> · 网页版</div>
+  </div>
+  <div class="foot">基于60+篇真实体验 + 190㎡精装房案例 + 华为/Aqara真实报价<br>「决策方法论」IP · 太子出品 · 长按/截图保存分享</div>
+</div>
+</body></html>`;
+  const w=window.open("","_blank","width=480,height=800");
+  if(w){w.document.write(doc);w.document.close()}else{alert("浏览器拦截了弹窗，请允许后再试")}
 }
 render();
 </script>
