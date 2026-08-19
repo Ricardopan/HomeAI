@@ -134,88 +134,73 @@ const B={
   morgen:{id:"morgen",name:"摩根 Moorgen",emoji:"💎",price:"¥5万~15万+",ref:"约8万+(190㎡)",tag:"设计师颜值、高级质感、豪宅标配",
     pros:["面板是艺术品级别（火与石、金钻系列）","高端住宅和设计师项目常用品牌","质感在智能家居中属于顶级"],
     cons:["价格极高，是华为的1.5-3倍","生态封闭","定制周期长","售后响应慢"],
-    roi:"不是性价比产品，是奢侈品。追求极致颜值和质感且预算充足时，摩根是唯一选择。"},
-  apple:{id:"apple",name:"苹果 HomeKit DIY",emoji:"🍎",price:"¥0.5万~2万",ref:"约1万(190㎡)",tag:"隐私安全、苹果原生、自己搭建",
-    pros:["隐私安全高，数据不出家门","iPhone/iPad/Apple TV原生控制","Matter协议前景好","可混搭多品牌设备"],
-    cons:["需要自己研究、搭建、调试","设备选择不如米家丰富","中控需要iPad/HomePod","没有一条龙服务"],
-    roi:"适合愿意折腾的苹果用户。用Aqara设备+HomeKit，比全买Aqara方案便宜，但需要自己设计架构。"}
+    roi:"不是性价比产品，是奢侈品。追求极致颜值和质感且预算充足时，摩根是唯一选择。"}
 };
 
 // ===== 步骤 =====
 const STEPS=[
-  { // Step 1: 基础信息
-    id:"info",n:1,total:9,label:"基础信息",
-    title:"先了解一下你的基本情况",
-    sub:"这些信息决定了可选方案和WiFi组网需求。",
+  { // Step 1: 房子概况
+    id:"info",n:1,total:6,label:"房子概况",
+    title:"先说说你的房子",
+    sub:"就2个小问题，选完就继续。",
     type:"info",
     fields:[
       {id:"area",label:"房屋面积",type:"select",opts:["80㎡以下","80-140㎡","140-200㎡","200㎡以上"]},
-      {id:"rooms",label:"房间数量",type:"select",opts:["1-2房","3房","4房","5房+"]},
-      {id:"house",label:"房屋类型",type:"select",opts:["精装房（开关底盒无零线）","毛坯房/全屋翻新"]},
-      {id:"zero",label:"零线方案",type:"select",opts:["不改造，就用单火开关（无额外费用）","找电工无损拉零线（约500-800元/房间）"]},
-      {id:"phone",label:"手机生态",type:"select",opts:["iPhone / 苹果全家桶","华为 / 鸿蒙手机","其他安卓手机"]},
-      {id:"diy",label:"动手意愿",type:"select",opts:["完全不想动手，装好就用","愿意简单设置，安装交给专业人","喜欢自己折腾，这是我的乐趣"]},
-      {id:"stay",label:"计划住多久",type:"select",opts:["3年内可能换房","5-10年","10年以上，这套是长期居所"]}
+      {id:"house",label:"房屋类型",type:"select",opts:["精装房（开关底盒无零线）","毛坯房/全屋翻新"],tip:"不确定就选精装。精装房也能花小几千改出零线，所以不用纠结，后面可按需调整"}
     ]
   },
   { // Step 2: 功能需求
-    id:"func",n:2,total:9,label:"功能需求",
-    title:"你具体需要哪些功能？",
-    sub:"勾选你需要的，不确定的可以先不选，后面可以调整。",
+    id:"func",n:2,total:6,label:"功能需求",
+    title:"你想要哪些智能功能？",
+    sub:"勾选需要的，不确定的可以先不选，后面能调整。",
     type:"func_check",
     items:[
-      {id:"curtain",name:"电动窗帘",emoji:"🪟",desc:"每天早晚拉窗帘很烦？客厅大落地窗手动拉更狼狈"},
-      {id:"light",name:"智能照明",emoji:"💡",desc:"不只是开关灯——可以调亮度、色温，甚至场景化自动切换"},
-      {id:"screen",name:"中控屏",emoji:"🖥️",desc:"墙上装一块触控屏，一触看全屋状态。华为S2和欧瑞博MixPad是代表作"},
-      {id:"scene",name:"智能场景",emoji:"🎬",desc:"一键切换回家/离家/睡眠模式——离家自动关全屋灯+开摄像头，回家自动亮灯+关窗帘"},
+      {id:"curtain",name:"电动窗帘",emoji:"🪟",desc:"每天早晚拉窗帘很烦？大落地窗手动拉更狼狈"},
+      {id:"light",name:"智能照明",emoji:"💡",desc:"不只是开关灯——能调亮度、色温，甚至场景化自动切换"},
+      {id:"screen",name:"中控屏",emoji:"🖥️",desc:"墙上装一块触控屏，一触看全屋状态（华为S2、欧瑞博MixPad是代表作）"},
+      {id:"scene",name:"智能场景",emoji:"🎬",desc:"一键切换回家/离家/睡眠——离家自动关灯+开摄像头，回家自动亮灯+关窗帘"},
       {id:"lock",name:"智能门锁",emoji:"🔐",desc:"指纹/人脸开门，联动回家场景（开门自动亮灯、关窗帘、开空调）"},
-      {id:"sec",name:"安防监控",emoji:"🛡️",desc:"烟雾/燃气/水浸传感器 + 摄像头，出门看家、厨房防泄漏"},
-      {id:"hvac",name:"冷暖新风联动",emoji:"🌡️",desc:"回家前10分钟自动开空调，冬天自动调地暖。有中央空调/地暖的话很实用"}
+      {id:"sec",name:"安防监控",emoji:"🛡️",desc:"烟雾/燃气/水浸传感器+摄像头，出门看家、厨房防泄漏"},
+      {id:"hvac",name:"冷暖新风联动",emoji:"🌡️",desc:"回家前自动开空调，冬天自动调地暖。有中央空调/地暖的话很实用"}
     ]
   },
-  { // Steps 3-7: 偏好程度（一页一个）
-    id:"pref_look",n:3,total:9,label:"偏好①",
-    title:"颜值与设计感：你愿意为开关面板的质感花多少钱？",
-    sub:"从普通白色开关，到墙上的触控屏，再到旋钮调光——不同价位的颜值体验差距很大。",
-    type:"scale_single",scaleId:"look",
-    lv:["白色开关就够","顺眼就行","想要中控屏","开关是艺术品"],
-    ex:["功能好用就行","和装修风格搭配","墙上有一块触控屏很加分","旋钮一转调氛围，面板质感高级"],
-    note:"中控屏和高端旋钮开关是拉开品牌差距的关键——华为和欧瑞博在这方面投入最大，Aqara和小米偏实用。"
+  { // Step 3: 品牌契合（手机生态+动手意愿）
+    id:"fit",n:3,total:6,label:"品牌契合",
+    title:"两个小问题，帮我们找准更适合你的品牌",
+    sub:"都选「不确定/都行」也能继续，后面的偏好会帮我们判断。",
+    type:"info",
+    fields:[
+      {id:"phone",label:"平时用什么手机？",type:"select",opts:["iPhone / 苹果全家桶","华为 / 鸿蒙手机","其他安卓手机","都行，不挑手机"]},
+      {id:"diy",label:"你愿意动手折腾多少？",type:"select",opts:["完全不想动手，装好就用","愿意简单设置，安装交给专业人","喜欢自己折腾，这是我的乐趣"]}
+    ]
   },
-  {id:"pref_ai",n:4,total:9,label:"偏好②",
-    title:"AI 智能化：你希望系统有多主动？",
-    sub:"从手动控制到全屋AI管家，体验差距很大，价格也差很多。",
-    type:"scale_single",scaleId:"ai",
-    lv:["手动+语音就够","几个场景模式","系统自动学习","全屋AI管家"],
-    ex:["App控制+喊一声开关灯","离家一键关全屋灯","晚上10点自动变暖光","我说'要睡了'它全搞定"],
-    note:"主动学习目前只有华为鸿蒙能做到。其他品牌需要你自己设置场景和规则。"
+  { // Step 4: 偏好（合并一页，4个态度滑块）
+    id:"pref",n:4,total:6,label:"你的偏好",
+    title:"最后4个态度问题，决定推荐精度",
+    sub:"每题选一个最像你的，凭感觉选就行。",
+    type:"pref_multi",
+    items:[
+      {id:"look",title:"面板颜值你多在意？",lv:["能用就行","和装修搭就行","想要质感好的","开关是艺术品"],
+       ex:["功能好用就行","和装修风格搭","要金属/玻璃/木纹的高端面板","旋钮一转调氛围，像展示品"],note:"高端面板是拉开品牌差距的关键——摩根、欧瑞博在此投入最大，小米偏实用。"},
+      {id:"ai",title:"系统要多聪明？",lv:["手动+语音就够","能设几个场景","会学我习惯自动调","越省心越好"],
+       ex:["App控制+喊一声开关灯","离家一键关全屋灯","定时/感应自动变暖光","全交给系统，不用我操心"],note:"主动学习目前只有华为鸿蒙能做到，其他品牌需自己设场景规则。"},
+      {id:"lighting",title:"灯光要什么水平？",lv:["能远程开关就行","能调亮度","能调冷暖色调","灯光随场景自动变"],
+       ex:["出门忘关能远程关","睡前调暗看手机不刺眼","暖黄/冷白随意切换","回家暖光、看书亮光、睡前助眠光"],note:"全屋调光调色最考验方案完整性——华为照明最完整，小米/绿米需自己搭灯具。"},
+      {id:"link",title:"设备要不要混着买？",lv:["一套同一品牌就行","想混几个品牌","我家已有设备必须接上","越开放越好"],
+       ex:["全套一个牌子，一个App","灯、窗帘、锁不同品牌混用","家里已有小米等设备要兼容","什么牌子都能接，不限生态"],note:"生态越开放，选择越多越便宜，但要自己调试；越封闭体验越统一，但以后只能走这品牌。"}
+    ]
   },
-  {id:"pref_light",n:5,total:9,label:"偏好③",
-    title:"灯光氛围：你对灯光的要求有多高？",
-    sub:"从能开关灯，到全屋色温统一、场景化自动切换——灯光是智能家居里最影响体验但最容易被忽略的维度。",
-    type:"scale_single",scaleId:"lighting",
-    lv:["能远程开关灯","客厅主卧调光","全屋调光调色","场景化灯光"],
-    ex:["出门忘关灯能远程关","卧室睡前调暗，客厅调暖","2700K暖黄到6500K冷白全屋统一","不同模式自动切换明暗色温"],
-    note:"全屋调光调色最考验方案完整性。华为照明方案最完整，Aqara和小米需自己搭配不同品牌灯具，容易色温不一致。"
+  { // Step 5: 预算（放到偏好之后，先懂需求再谈钱）
+    id:"budget_in",n:5,total:6,label:"预算范围",
+    title:"这套智能大概打算花多少钱？",
+    sub:"给个范围就行，不用精确。不确定的话，我们可以先按功能推荐，价格在后面可调。",
+    type:"info",
+    fields:[
+      {id:"budget",label:"预算范围",type:"select",opts:["3万以内","3-6万","6-12万"],tip:"参考：3万内=灯控+开关+门锁；3-6万=全屋灯光+窗帘+场景+安防；6-12万=中控屏+全屋联动+豪华面板"}
+    ]
   },
-  {id:"pref_link",n:6,total:9,label:"偏好④",
-    title:"跨品牌联动：你需要不同品牌设备互相配合吗？",
-    sub:"比如扫地机扫完地自动开净化器、门锁开门自动亮灯——这些需要不同品牌设备之间能联动。",
-    type:"scale_single",scaleId:"link",
-    lv:["一个品牌就行","几个主流品牌","兼容已有设备","跨品牌全打通"],
-    ex:["全套一个牌子，统一App","空调灯窗帘一个品牌","已有小米设备必须接入","扫地机+净化器+门锁全联动"],
-    note:"生态越开放，设备选择越多越便宜，但需要自己调试。生态越封闭，体验越统一，但以后只能走这个品牌。"
-  },
-  {id:"pref_upgrade",n:7,total:9,label:"偏好⑤",
-    title:"未来升级：装完后还打算继续添置新设备吗？",
-    sub:"这决定了选封闭生态还是一步到位，还是选开放生态方便以后扩展。",
-    type:"scale_single",scaleId:"upgrade",
-    lv:["装完就不管了","少量添加","逐步升级","持续进化"],
-    ex:["一步到位，以后不问","加个扫地机摄像头","每年换几个新设备","新设备新功能都能跟上"],
-    note:"封闭生态（华为、摩根）升级只能走自家路线。开放生态（小米、HomeKit）新设备选择多。精装房如果不想改线路，后期可扩展性也受限。"
-  },
-  { // Step 8: 预算确认
-    id:"budget_confirm",n:8,total:9,label:"预算确认",
+  { // Step 6: 预算确认
+    id:"budget_confirm",n:6,total:6,label:"预算确认",
     title:"根据你的需求，预估预算在这个范围",
     sub:"如果觉得偏高，下面有省钱方案；如果预算充足，可以看升级方案。",
     type:"budget"
@@ -239,7 +224,7 @@ function areaFactor(){
 // 点位类（灯具/窗帘/传感器/AP）随面积缩放；中枢类（中控屏/主机/网关/服务）固定
 function estBudget(top){
   const f=ans.func||{},p=ans.pref||{},info=ans.info||{};
-  const base={xiaomi:7000,aqara:13000,huawei:30000,orbibo:18000,morgen:50000,apple:6000};
+  const base={xiaomi:7000,aqara:13000,huawei:30000,orbibo:18000,morgen:50000};
   const k=areaFactor();
   let t=base[top]||10000;
   // 点位类：乘面积系数
@@ -251,7 +236,6 @@ function estBudget(top){
   if(f.scene)t+=1000;
   if(f.lock)t+=1500;
   if(f.hvac)t+=3000;
-  if(info.zero==="找电工无损拉零线（约500-800元/房间）")t+=2000*Math.min(k,1.0);
   const lo=Math.round(t*0.7/1000)*1000,hi=Math.round(t*1.35/1000)*1000;
   return {lo,hi,mid:Math.round(t/1000)*1000};
 }
@@ -283,40 +267,70 @@ function getAdjOptions(){
   return {save,add};
 }
 
+// 权重基于完整能力调研(见 调研_全屋智能品牌能力.md)。
+// 原则：全屋智能品牌均覆盖全产品线，功能维度只做"强弱"不做"有无"(避免被动降权)；
+//       手机生态/预算为强影响维度用大幅差，软偏好(颜值/调光/AI/生态)用乘权。
 function score(){
-  const s={xiaomi:0,aqara:0,huawei:0,orbibo:0,morgen:0,apple:0};
+  const s={xiaomi:0,aqara:0,huawei:0,orbibo:0,morgen:0};
   const info=ans.info||{},f=ans.func||{},p=ans.pref||{};
-  // 房屋
-  if(info.house==="精装房（开关底盒无零线）"){s.aqara+=6;s.xiaomi+=3;s.huawei+=2;s.apple+=3}
-  else{s.huawei+=7;s.xiaomi+=5;s.aqara+=5;s.orbibo+=5;s.morgen+=5}
-  // 零线
-  if(info.zero==="找电工无损拉零线（约500-800元/房间）"){s.huawei+=4;s.xiaomi+=3;s.orbibo+=3;s.morgen+=3}
-  // 手机（App时代手机品牌影响有限，仅保留真实生态差异，去掉负分）
-  if(info.phone==="iPhone / 苹果全家桶"){s.apple+=6;s.aqara+=3}
+
+  // ===== 房屋类型 =====
+  // 精装无零线：绿米单火直装最稳(Matter/HomeKit)，小米蓝牙Mesh也可直装，华为/欧瑞博有后装方案但需注意
+  // 毛坯/翻新：华为前装PLC最合适，其余自由
+  if(info.house==="精装房（开关底盒无零线）"){s.aqara+=5;s.xiaomi+=4;s.huawei+=3;s.orbibo+=3;s.morgen+=2}
+  else{s.huawei+=4;s.xiaomi+=4;s.aqara+=4;s.orbibo+=4;s.morgen+=3}
+
+  // ===== 手机生态 =====
+  // 手机在App时代差别有限，且iPhone用户未必需要HomeKit(很多只想要省心好用的系统)：
+  // - 绿米给iPhone用户加分，因为HomeKit原生是它实打实的优势(Apple用户若在意HomeKit体验最佳)
+  // - 但"选华为"不该被惩罚——华为有iOS版App可控制，精装房也有蓝牙Mesh后装方案，
+  //   只要用户没明确表达HomeKit刚需，华为与绿米应公平竞争，由需求(省心/功能/颜值)决定
+  // - 华为/鸿蒙：鸿蒙超级终端对华为最优(但非硬绑，真正的绑定用户不需要测评)
+  // - 安卓：米家App跨平台最好用
+  if(info.phone==="iPhone / 苹果全家桶"){s.aqara+=6;s.xiaomi+=1;s.morgen+=1}
   else if(info.phone==="华为 / 鸿蒙手机"){s.huawei+=6;s.aqara+=1}
-  else{s.xiaomi+=4;s.aqara+=2}
-  // DIY
-  if(info.diy==="完全不想动手，装好就用"){s.huawei+=6;s.morgen+=6;s.orbibo+=5;s.aqara+=2}
-  else if(info.diy==="愿意简单设置，安装交给专业人"){s.aqara+=6;s.huawei+=3;s.xiaomi+=2}
-  else{s.xiaomi+=7;s.apple+=6;s.aqara+=3;s.huawei+=1}
-  // 居住时长
-  if(info.stay==="10年以上，这套是长期居所"){s.huawei+=4;s.morgen+=3;s.aqara+=2}
-  if(info.stay==="3年内可能换房"){s.xiaomi+=3;s.apple+=2}
-  // 功能
-  if(f.screen){s.huawei+=5;s.orbibo+=4;s.morgen+=3}
-  if(f.scene){s.huawei+=3;s.aqara+=2;s.xiaomi+=2}
-  if(f.light){s.huawei+=3;s.aqara+=2}
-  if(f.curtain){s.huawei+=2;s.aqara+=2}
-  if(f.lock){s.xiaomi+=2;s.aqara+=1}
-  if(f.sec){s.xiaomi+=2}
-  if(f.hvac){s.huawei+=3;s.aqara+=2}
-  // 偏好（值域0-3，权重封顶避免单项碾压基础维度，单项上限~12分）
-  const lk=p.look||0,ai=p.ai||0,lt=p.lighting||0,ln=p.link||0,up=p.upgrade||0;
-  s.morgen+=lk*4;s.orbibo+=lk*4;s.huawei+=lk*3;s.aqara+=lk*1;
-  s.huawei+=ai*4;s.xiaomi+=ai*1.5;s.aqara+=ai*1;
-  s.huawei+=lt*3;s.orbibo+=lt*2;
-  s.xiaomi+=ln*4;s.aqara+=ln*3;s.apple+=ln*3;s.huawei+=ln*1;
-  s.xiaomi+=up*3;s.apple+=up*3;s.aqara+=up*2;s.huawei+=up*1;
+  else if(info.phone==="其他安卓手机"){s.xiaomi+=3;s.aqara+=1}
+
+  // ===== 预算 =====
+  // 价位带：小米1万起、绿米1.5-4万、欧瑞博2-6万、华为3万起、摩根5万+（调研确认）
+  // 预算表达了用户可接受量级，价位不匹配的品牌在此大幅承压(真实约束，非一票否决)
+  if(info.budget==="3万以内"){s.xiaomi+=8;s.aqara+=4;s.orbibo-=5;s.huawei-=12;s.morgen-=14}
+  else if(info.budget==="3-6万"){s.aqara+=4;s.orbibo+=5;s.huawei+=1;s.xiaomi+=2;s.morgen-=2}
+  else if(info.budget==="6-12万"){s.morgen+=6;s.huawei+=5;s.orbibo+=2;s.aqara+=1;s.xiaomi-=5}
+
+  // ===== DIY/动手意愿 =====
+  // 省心：华为/摩根一站式全包；绿米专业服务也可；小米需自己研究
+  // 专业装：绿米/欧瑞博服务成熟；爱折腾：小米可玩性最高、绿米可控
+  if(info.diy==="完全不想动手，装好就用"){s.huawei+=5;s.morgen+=6;s.orbibo+=3;s.aqara+=2;s.xiaomi-=1}
+  else if(info.diy==="愿意简单设置，安装交给专业人"){s.aqara+=6;s.orbibo+=4;s.huawei+=2;s.xiaomi+=1}
+  else{s.xiaomi+=7;s.aqara+=4;s.huawei+=1;s.orbibo+=1}
+
+  // ===== 功能(品牌全覆盖，只做强弱，不做有无) =====
+  // 中控屏：欧瑞博MixPad招牌、华为S2/摩根面板，绿米妙控屏，小米家庭屏
+  if(f.screen){s.orbibo+=5;s.huawei+=4;s.morgen+=4;s.aqara+=3;s.xiaomi+=2}
+  // 场景联动：华为主机集中、绿米Zigbee本地、小米生态最丰富
+  if(f.scene){s.huawei+=3;s.aqara+=3;s.xiaomi+=3;s.orbibo+=2;s.morgen+=2}
+  // 灯光/调光：华为无级调光、摩根调光系统、欧瑞博氛围强
+  if(f.light){s.huawei+=4;s.morgen+=4;s.orbibo+=3;s.aqara+=3;s.xiaomi+=2}
+  // 窗帘：各家都有，华为杜亚PLC/小米平价/绿米稳定
+  if(f.curtain){s.aqara+=3;s.huawei+=3;s.xiaomi+=3;s.orbibo+=2;s.morgen+=2}
+  // 门锁：华为智能门锁2Pro、小米性价比、绿米Zigbee联动，各家均有
+  if(f.lock){s.huawei+=3;s.xiaomi+=3;s.aqara+=3;s.orbibo+=2;s.morgen+=2}
+  // 安防：华为安防子系统、绿米传感器丰富，各家均有
+  if(f.sec){s.huawei+=3;s.aqara+=3;s.xiaomi+=2;s.orbibo+=2;s.morgen+=2}
+  // 新风空调：华为冷暖新风子系统最强
+  if(f.hvac){s.huawei+=4;s.aqara+=2;s.xiaomi+=2;s.orbibo+=2;s.morgen+=2}
+
+  // ===== 软偏好(值域0-3，乘权) =====
+  const lk=p.look||0,ai=p.ai||0,lt=p.lighting||0,ln=p.link||0;
+  // 颜值：摩根极致 > 华为(仅次摩根) > 欧瑞博 > 绿米(质感) > 小米(实用)
+  s.morgen+=lk*8;s.huawei+=lk*5;s.orbibo+=lk*4;s.aqara+=lk*2;s.xiaomi+=lk*1;
+  // AI智能：小米小爱/华为主动智能强，绿米/欧瑞博被动
+  s.xiaomi+=ai*3;s.huawei+=ai*3;s.aqara+=ai*1;s.orbibo+=ai*1;s.morgen+=ai*1;
+  // 调光：摩根/欧瑞博/华为调光最强，绿米次之，小米一般
+  s.morgen+=lt*3;s.orbibo+=lt*3;s.huawei+=lt*3;s.aqara+=lt*2;s.xiaomi+=lt*1;
+  // 生态联动：小米最开放，绿米跨平台，华为/欧瑞博/摩根封闭
+  s.xiaomi+=ln*4;s.aqara+=ln*3;s.huawei+=ln*1;s.orbibo+=ln*1;s.morgen+=ln*1;
   return s;
 }
 
@@ -326,7 +340,7 @@ function reasons(top){
   const r=[],a=(i,t)=>{r.push({i,t})};
   const info=ans.info||{},f=ans.func||{},p=ans.pref||{};
   if(top==="aqara"){
-    if(info.house==="精装房（开关底盒无零线）"&&info.zero!=="找电工无损拉零线（约500-800元/房间）")a("🏗️","你是精装房且不想改零线，Aqara是业界公认单火开关最稳定的品牌——不闪、不延迟、不离线。");
+    if(info.house==="精装房（开关底盒无零线）")a("🏗️","你是精装房，Aqara是业界公认单火开关最稳定的品牌——不闪、不延迟、不离线，几乎不用改线路。");
     if(info.phone==="iPhone / 苹果全家桶")a("🍎","iPhone用户，Aqara原生支持HomeKit，喊一声'嘿Siri'全屋响应，无需额外网关。");
     if(info.diy==="愿意简单设置，安装交给专业人")a("🤝","你愿意简单设置但不想折腾，Aqara上手难度刚好——App清晰，不用编程。");
     if(r.length<3)a("✅","精装房改造场景下，Aqara是综合最优解，没有明显短板。");
@@ -356,20 +370,15 @@ function reasons(top){
     if(info.diy==="完全不想动手，装好就用")a("🛎️","完全不想动手，摩根一条龙服务，梁志天私邸会所同款。");
     if(r.length<3)a("✨","摩根不是性价比产品，是奢侈品。如果你追求极致且预算充足，它是唯一选择。");
   }
-  if(top==="apple"){
-    if(info.phone==="iPhone / 苹果全家桶")a("🍎","苹果全家桶用户，HomeKit原生体验最好，Siri控制，家庭App统一管理，隐私安全最高。");
-    if(info.diy==="喜欢自己折腾，这是我的乐趣")a("🔧","你喜欢折腾，HomeKit DIY可以混搭Aqara/小米等品牌，自己设计架构，灵活度最高。");
-    if(r.length<3)a("🔐","Matter协议前景好，未来跨生态兼容性强。但需要自己动手，没有一条龙服务。");
-  }
   return r;
 }
 
 function wifiAdvice(){
   const info=ans.info||{};
-  const area=info.area||"",rooms=info.rooms||"";
-  if(area.includes("80㎡以下")||rooms.includes("1-2房"))return {type:"单路由够用",detail:"面积不大，一台好路由器（如华为AX6/小米AX6000）放客厅，全屋覆盖没问题。",cost:"¥300-600"};
-  if(area.includes("80-140")||rooms.includes("3房"))return {type:"Mesh组网",detail:"面积中等，建议Mesh组网（2个节点），主路由放客厅，子节点放远端房间。小米/华为/TPlink都有成熟方案。",cost:"¥500-1200"};
-  if(area.includes("140-200")||rooms.includes("4房"))return {type:"AC+AP（推荐）",detail:"面积较大或房间多，建议AC+AP方案——每个房间装一个AP面板，信号无缝漫游。这是全屋智能不掉线的网络基础。",cost:"¥1500-3000"};
+  const area=info.area||"";
+  if(area.includes("80㎡以下"))return {type:"单路由够用",detail:"面积不大，一台好路由器（如华为AX6/小米AX6000）放客厅，全屋覆盖没问题。",cost:"¥300-600"};
+  if(area.includes("80-140"))return {type:"Mesh组网",detail:"面积中等，建议Mesh组网（2个节点），主路由放客厅，子节点放远端房间。小米/华为/TPlink都有成熟方案。",cost:"¥500-1200"};
+  if(area.includes("140-200"))return {type:"AC+AP（推荐）",detail:"面积较大，建议AC+AP方案——每个房间装一个AP面板，信号无缝漫游。这是全屋智能不掉线的网络基础。",cost:"¥1500-3000"};
   return {type:"AC+AP（推荐）",detail:"大户型必须上AC+AP，吸顶AP+面板AP组合，每个角落信号满格。这是全屋智能不掉线的前提。",cost:"¥2000-5000"};
 }
 
@@ -386,6 +395,7 @@ function render(){
       const cur=(ans.info||{})[f.id]||"";
       return `<div style="margin-bottom:8px">
         <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:4px">${f.label}</div>
+        ${f.tip?`<div style="font-size:11px;color:#a09888;margin-bottom:6px">💡 ${f.tip}</div>`:""}
         <div class="opt-grid">${f.opts.map(o=>`
           <div class="opt-card${cur===o?' sel':''}" onclick="selInfo('${f.id}','${o}')">
             <div style="flex:1"><div class="oc-title">${o}</div></div>
@@ -409,6 +419,18 @@ function render(){
       <div class="scale-ex">${st.ex.map(e=>`<span>${e}</span>`).join("")}</div>
       ${st.note?`<div class="scale-note">💡 ${st.note}</div>`:""}
     </div>`;
+  }else if(st.type==="pref_multi"){
+    const p=ans.pref||{};
+    body=`<div style="display:flex;flex-direction:column;gap:18px">${st.items.map(it=>{
+      const cur=p[it.id]!==undefined?p[it.id]:-1;
+      return `<div>
+        <div style="font-size:14px;font-weight:600;color:#333;margin-bottom:8px">${it.title}</div>
+        <div class="scale-row">${it.lv.map((l,i)=>`
+          <div class="scale-dot${cur===i?' on':''}" onclick="selPref('${it.id}',${i})">${l}</div>`).join("")}</div>
+        <div class="scale-ex">${it.ex.map(e=>`<span>${e}</span>`).join("")}</div>
+        ${it.note?`<div class="scale-note" style="margin-top:6px">💡 ${it.note}</div>`:""}
+      </div>`;
+    }).join("")}</div>`;
   }else if(st.type==="budget"){
     const bp=getBudgetEstimate();
     const adj=getAdjOptions();
@@ -434,9 +456,10 @@ function render(){
     </div>`:""}`;
   }
 
-  const hasAns=st.type==="info"?(ans.info&&Object.keys(ans.info).length>=st.fields.length)
+  const hasAns=st.type==="info"?(st.fields.every(f=>(ans.info||{})[f.id]))
     :st.type==="func_check"?true
     :st.type==="scale_single"?(ans.pref&&ans.pref[st.scaleId]!==undefined)
+    :st.type==="pref_multi"?(ans.pref&&Object.keys(ans.pref).length>0)
     :st.type==="budget"?true
     :false;
 
@@ -510,6 +533,21 @@ function renderResult(){
       <div class="reason-block"><span class="reason-ico">💡</span><span>${top.roi}</span></div>
     </div>
 
+    ${(function(){
+      const selBud=(ans.info||{}).budget;
+      const maxMap={"3万以内":3,"3-6万":6,"6-12万":12};
+      const maxV=maxMap[selBud];
+      const midW=budget.mid/10000; // 估算基准(万)
+      if(maxV && midW>maxV){
+        const gap=Math.round(midW-maxV);
+        return `<div class="card" style="border:1px solid #e0a93f;background:#fdf8ec;text-align:left">
+          <div class="section-label" style="color:#a8781c">⚠️ 预算与需求不匹配</div>
+          <div class="reason-block"><span class="reason-ico">💡</span><span>你选的<strong>${selBud}</strong>预算档，按这些功能估算需要约<strong>¥${midW.toFixed(1)}万</strong>，超出约<strong>¥${gap}万</strong>。要么<span style="color:#5a6b4a;font-weight:600">提高预算</span>，要么在下方"想省钱"里<span style="color:#5a6b4a;font-weight:600">砍掉部分功能</span>（如中控屏、全屋调光）。</span></div>
+        </div>`;
+      }
+      return "";
+    })()}
+
     <div class="budget-box">
       <div class="budget-label">最终预估预算（${ans.info.area||'190㎡'}）</div>
       <div class="budget-amount">¥${(Math.max(0,finalLo)/10000).toFixed(1)}万 ~ ¥${(Math.max(0,finalHi)/10000).toFixed(1)}万</div>
@@ -560,7 +598,7 @@ function renderResult(){
         ${f.lock?'<span class="tag">🔐 智能门锁</span>':''}
         ${f.sec?'<span class="tag">🛡️ 安防监控</span>':''}
         ${f.hvac?'<span class="tag">🌡️ 冷暖联动</span>':''}
-        ${['look','ai','lighting','link','upgrade'].map(k=>{const lb={look:['颜值无所谓','顺眼就行','要中控屏和好开关','旋钮调光艺术品'],ai:['手动语音控制','场景模式','主动学习','全屋AI管家'],lighting:['开关控制','部分调光','全屋调光','调光+氛围'],link:['一个品牌就行','几个主流品牌','兼容已有设备','万物互联'],upgrade:['装完不管','少量添加','逐步升级','持续进化']};const v=p[k];return v!==undefined?`<span class="tag">${lb[k]?.[v]||''}</span>`:''}).join("")}
+        ${['look','ai','lighting','link'].map(k=>{const lb={look:['能用就行','和装修搭就行','质感好面板','开关是艺术品'],ai:['手动+语音就够','能设几个场景','会学我习惯','越省心越好'],lighting:['能远程开关','能调亮度','能调冷暖色调','灯光随场景变'],link:['同一品牌就行','能混几个品牌','已有设备要接入','越开放越好']};const v=p[k];return v!==undefined?`<span class="tag">${lb[k]?.[v]||''}</span>`:''}).join("")}
       </div>
     </div>
 
