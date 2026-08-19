@@ -62,6 +62,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .btn-p:hover{opacity:0.92;transform:translateY(-1px)}
 .btn-s{background:#fff;color:#a09888;border:1px solid #e8e3da}
 .btn-s:hover{border-color:#c4bda8;color:#777}
+.btn-share{background:linear-gradient(135deg,#5a6b4a,#4a5a3d);color:#fff;font-size:17px;padding:16px;box-shadow:0 4px 14px rgba(90,107,74,0.28);border:2px solid rgba(255,255,255,0.15)}
+.btn-share:hover{opacity:0.94;transform:translateY(-1px);box-shadow:0 6px 18px rgba(90,107,74,0.34)}
+.btn-ghost{background:transparent;color:#a09888;border:1px solid #e0dbd1;font-size:14px;padding:11px}
+.btn-ghost:hover{background:#f4f1ea;color:#777}
+#share-screen{display:none;position:fixed;inset:0;z-index:100;background:#edeae3;overflow-y:auto}
 
 /* 结果 */
 .result{text-align:center}
@@ -111,6 +116,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 </head>
 <body>
 <div class="container" id="app"></div>
+<div id="share-screen"></div>
 
 <script>
 
@@ -605,8 +611,8 @@ function renderResult(){
       </div>
     </div>
 
-    <button class="btn btn-p" onclick="restart()">🔄 重新测试</button>
-    <button class="btn btn-s" onclick="share()">📤 分享结果</button>
+    <button class="btn btn-share" onclick="openShare()">📤 分享结果</button>
+    <button class="btn btn-ghost" onclick="restart()">↺ 重新测试</button>
     <div class="footnote">基于小红书60+篇笔记 + 真实190㎡精装房案例 + 华为/Aqara真实报价<br>「决策方法论」IP 第一个工具 · designed by RicardoPan · 仅供参考</div>
   </div>`;
 }
@@ -619,18 +625,17 @@ function toggleAdj(key){if(!ans.adjust)ans.adjust={};if(ans.adjust[key])delete a
 function next(){if(step<STEPS.length-1){step++;render()}else{showResult=true;render()}}
 function prev(){if(step>0){step--;render()}}
 function restart(){step=0;ans={};showResult=false;render()}
-function share(){
+// ===== 分享视图(跳转页面模式,不用弹窗,避免被拦截) =====
+function openShare(){
   const scores=score(),ranked=rank(scores),top=ranked[0];
   const total=ranked.reduce((s,b)=>s+Math.max(0,b.score),0);
   const pct=Math.round((top.score/total)*100);
-  // 契合度映射到高分区(70-99),避免"30%"读起来像不太契合; 领先越多越接近99
   const fit=Math.min(99,72+Math.round(pct/2));
   const budget=estBudget(top.id);
   const rs=reasons(top.id);
   const info=ans.info||{},f=ans.func||{};
   const URL="https://ricardopan.github.io/HomeAI/";
   const px=top.emoji, nm=top.name, pr=top.price;
-  // 本地生成二维码(纯SVG文本,不依赖canvas绘制,任何环境100%显示)
   function qrSVG(text,size){
     try{
       const tmp=document.createElement('div');
@@ -643,85 +648,31 @@ function share(){
     }catch(e){return ''}
   }
   const qrSrc=qrSVG(URL,220);
-  // 需求标签(压缩到一张,优先面积+房型+手机+已选功能)
   const funcNames={curtain:'🪟 电动窗帘',light:'💡 智能照明',screen:'🖥️ 中控屏',scene:'🎬 智能场景',lock:'🔐 智能门锁',sec:'🛡️ 安防监控',hvac:'🌡️ 冷暖联动'};
   const selFunc=Object.keys(f).filter(k=>f[k]).map(k=>funcNames[k]).join(' · ');
-  const tagHtml={
-    a:info.area||'',b:info.house||'',c:info.phone||''
-  };
+  const tagHtml={a:info.area||'',b:info.house||'',c:info.phone||''};
   const tags=[tagHtml.a,tagHtml.b,tagHtml.c,selFunc].filter(Boolean).map(t=>`<span style="display:inline-block;background:#f2f5ef;border:1px solid #e0e6d8;color:#6a7a5a;border-radius:4px;padding:3px 8px;font-size:10.5px;margin:2px">${t}</span>`).join("");
-  // 排名:第1名高亮首选,其余合并成一行紧凑小字
   const others=ranked.slice(1).map((b,i)=>`<span style="color:#8a8377;font-size:11px">${b.emoji}${b.name}</span>`).join('<span style="color:#cfc9bd;margin:0 5px">·</span>');
   const rsHtml=rs.slice(0,2).map(r=>`<div class="rs"><em>▸</em>${r.t}</div>`).join("");
-  const doc=`<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我的全屋智能推荐 · ${nm}</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{margin:0;background:#edeae3;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;display:flex;justify-content:center;align-items:flex-start;padding:18px 12px}
-.card{width:408px;background:#fff;border-radius:20px;padding:22px 24px 16px;box-shadow:0 10px 34px rgba(60,50,30,0.12);text-align:center;border:1px solid rgba(0,0,0,0.03)}
-.topline{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:#b3ac9e;letter-spacing:1.5px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed #ece7dd}
-.topline b{color:#8a8377;font-weight:600}
-.brand{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 4px}
-.brand .emo{font-size:46px;line-height:1}
-.brand .txt{text-align:left}
-.brand .nm{font-size:27px;font-weight:700;color:#2f2b24;line-height:1.15;letter-spacing:0.5px}
-.brand .tg{font-size:11px;color:#a69d8c;margin-top:3px;letter-spacing:0.5px}
-.match{display:inline-block;background:linear-gradient(135deg,#5a6b4a,#4a5a3d);color:#fff;border-radius:999px;padding:6px 16px;font-size:12px;font-weight:600;margin:10px 0 8px;letter-spacing:1px;box-shadow:0 2px 8px rgba(90,107,74,0.25)}
-.pri{font-size:22px;font-weight:700;color:#4a5a3d;letter-spacing:0.5px}
-.pricen{font-size:10.5px;color:#b3ac9e;margin:3px 0 12px}
-.block{background:#faf9f5;border-radius:12px;padding:11px 14px;margin-bottom:9px;text-align:left;border:1px solid #f1ede5}
-.sec{font-size:10.5px;color:#8a8377;font-weight:700;letter-spacing:1.5px;margin-bottom:7px;display:flex;align-items:center}
-.sec::before{content:"";display:inline-block;width:3px;height:12px;background:#8fa07e;border-radius:2px;margin-right:7px}
-.rs{font-size:13px;color:#4a463c;line-height:1.65;margin-bottom:5px}
-.rs em{font-style:normal;color:#b0a89a;margin-right:4px}
-.rank1{display:flex;align-items:center;gap:9px;font-size:12.5px}
-.rank1 .fir{background:#5a6b4a;color:#fff;border-radius:5px;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:1px}
-.rank1 .em{font-size:17px}
-.rank1 .nm{font-weight:700;color:#5a6b4a;letter-spacing:0.5px}
-.others{font-size:10.5px;color:#8a8377;text-align:left;margin-top:7px;line-height:1.8;padding-top:6px;border-top:1px dashed #ece7dd}
-.others b{color:#a69d8c;font-weight:600}
-.qr{display:flex;align-items:center;gap:14px;padding:12px 4px 4px;border-top:1px solid #f0ece4}
-.qr img{width:112px;height:112px;border-radius:10px;background:#fff;padding:7px;border:1px solid #efeae0;flex:0 0 auto}
-.qrtext{font-size:10.5px;color:#8a8377;text-align:left;line-height:1.7}
-.qrtext b{color:#5a6b4a}
-.foot{font-size:9.5px;color:#c0b9ac;margin-top:10px;line-height:1.6;text-align:center}
-.credit{font-size:10px;color:#c9c2b5;letter-spacing:0.8px;text-align:right;margin-top:6px;font-style:italic}
-</style></head><body>
-<div class="card">
-  <div class="topline"><span>🔮 全屋智能品牌决策器</span><span><b>60+</b> 真实体验校准</span></div>
-  <div class="brand">
-    <span class="emo">${px}</span>
-    <div class="txt">
-      <div class="nm">${nm}</div>
-      <div class="tg">品牌参考价 ${pr}</div>
-    </div>
-  </div>
-  <div class="match">✦ 推荐契合度 ${fit}%</div>
-  <div class="pri">¥${(budget.lo/10000).toFixed(1)}万 ~ ¥${(budget.hi/10000).toFixed(1)}万</div>
-  <div class="pricen">预估预算 · ${info.area||'190㎡'}</div>
-  <div class="block">
-    <div class="sec">为什么是它</div>
-    ${rsHtml}
-  </div>
-  <div class="block">
-    <div class="sec">品牌排名</div>
-    <div class="rank1"><span class="fir">首选</span><span class="em">${top.emoji}</span><span class="nm">${top.name}</span></div>
-    <div class="others"><b>备选</b>：${others}</div>
-  </div>
-  <div class="block">
-    <div class="sec">我的需求</div>
-    ${tags}
-  </div>
-  <div class="qr">
-    <img src="${qrSrc}" alt="二维码">
-    <div class="qrtext">扫码测一测<br>你的全屋智能该选哪家<br>✳ <b>决策器</b> · 网页版</div>
-  </div>
-  <div class="foot">基于 60+ 篇真实体验 · 190㎡精装房案例 · 华为/Aqara 真实报价</div>
-  <div class="credit">designed by RicardoPan</div>
-</div>
-</body></html>`;
-  const w=window.open("","_blank","width=440,height=780");
-  if(w){w.document.write(doc);w.document.close()}else{alert("浏览器拦截了弹窗，请允许后再试")}
+  const card=`<div class="card" style="width:408px;background:#fff;border-radius:20px;padding:22px 24px 16px;box-shadow:0 10px 34px rgba(60,50,30,0.12);text-align:center;border:1px solid rgba(0,0,0,0.03);margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif">
+  <div style="display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:#b3ac9e;letter-spacing:1.5px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed #ece7dd"><span>🔮 全屋智能品牌决策器</span><span style="color:#8a8377;font-weight:600">60+ 真实体验校准</span></div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 4px"><span style="font-size:46px;line-height:1">${px}</span><div style="text-align:left"><div style="font-size:27px;font-weight:700;color:#2f2b24;line-height:1.15;letter-spacing:0.5px">${nm}</div><div style="font-size:11px;color:#a69d8c;margin-top:3px;letter-spacing:0.5px">品牌参考价 ${pr}</div></div></div>
+  <div style="display:inline-block;background:linear-gradient(135deg,#5a6b4a,#4a5a3d);color:#fff;border-radius:999px;padding:6px 16px;font-size:12px;font-weight:600;margin:10px 0 8px;letter-spacing:1px;box-shadow:0 2px 8px rgba(90,107,74,0.25)">✦ 推荐契合度 ${fit}%</div>
+  <div style="font-size:22px;font-weight:700;color:#4a5a3d;letter-spacing:0.5px">¥${(budget.lo/10000).toFixed(1)}万 ~ ¥${(budget.hi/10000).toFixed(1)}万</div>
+  <div style="font-size:10.5px;color:#b3ac9e;margin:3px 0 12px">预估预算 · ${info.area||'190㎡'}</div>
+  <div style="background:#faf9f5;border-radius:12px;padding:11px 14px;margin-bottom:9px;text-align:left;border:1px solid #f1ede5"><div style="font-size:10.5px;color:#8a8377;font-weight:700;letter-spacing:1.5px;margin-bottom:7px;display:flex;align-items:center"><span style="display:inline-block;width:3px;height:12px;background:#8fa07e;border-radius:2px;margin-right:7px"></span>为什么是它</div>${rsHtml}</div>
+  <div style="background:#faf9f5;border-radius:12px;padding:11px 14px;margin-bottom:9px;text-align:left;border:1px solid #f1ede5"><div style="font-size:10.5px;color:#8a8377;font-weight:700;letter-spacing:1.5px;margin-bottom:7px;display:flex;align-items:center"><span style="display:inline-block;width:3px;height:12px;background:#8fa07e;border-radius:2px;margin-right:7px"></span>品牌排名</div>
+    <div style="display:flex;align-items:center;gap:9px;font-size:12.5px"><span style="background:#5a6b4a;color:#fff;border-radius:5px;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:1px">首选</span><span style="font-size:17px">${top.emoji}</span><span style="font-weight:700;color:#5a6b4a;letter-spacing:0.5px">${top.name}</span></div>
+    <div style="font-size:10.5px;color:#8a8377;text-align:left;margin-top:7px;line-height:1.8;padding-top:6px;border-top:1px dashed #ece7dd"><span style="color:#a69d8c;font-weight:600">备选</span>：${others}</div></div>
+  <div style="background:#faf9f5;border-radius:12px;padding:11px 14px;margin-bottom:9px;text-align:left;border:1px solid #f1ede5"><div style="font-size:10.5px;color:#8a8377;font-weight:700;letter-spacing:1.5px;margin-bottom:7px;display:flex;align-items:center"><span style="display:inline-block;width:3px;height:12px;background:#8fa07e;border-radius:2px;margin-right:7px"></span>我的需求</div>${tags}</div>
+  <div style="display:flex;align-items:center;gap:14px;padding:12px 4px 4px;border-top:1px solid #f0ece4"><img src="${qrSrc}" style="width:112px;height:112px;border-radius:10px;background:#fff;padding:7px;border:1px solid #efeae0;flex:0 0 auto"><div style="font-size:10.5px;color:#8a8377;text-align:left;line-height:1.7">扫码测一测<br>你的全屋智能该选哪家<br>✳ <span style="color:#5a6b4a;font-weight:600">决策器</span> · 网页版</div></div>
+  <div style="font-size:9.5px;color:#c0b9ac;margin-top:10px;line-height:1.6;text-align:center">基于 60+ 篇真实体验 · 190㎡精装房案例 · 华为/Aqara 真实报价</div>
+  <div style="font-size:10px;color:#c9c2b5;letter-spacing:0.8px;text-align:right;margin-top:6px;font-style:italic">designed by RicardoPan</div>
+</div>`;
+  document.getElementById('share-screen').innerHTML='<div style="position:sticky;top:0;background:rgba(242,240,234,0.95);backdrop-filter:blur(4px);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;z-index:10;border-bottom:1px solid #e5e0d6;font-family:-apple-system,BlinkMacSystemFont,\'PingFang SC\',sans-serif"><button onclick="closeShare()" style="background:#fff;border:1px solid #d8d2c8;color:#6a6255;border-radius:999px;padding:8px 18px;font-size:14px;cursor:pointer">← 返回决策器</button><a href="'+URL+'" target="_blank" rel="noopener" style="text-decoration:none;background:#5a6b4a;color:#fff;border-radius:999px;padding:8px 18px;font-size:14px;font-weight:600">🌐 打开线上版</a></div><div style="padding:18px 12px 40px;background:#edeae3;min-height:100vh">'+card+'</div>';
+  document.getElementById('share-screen').style.display='block';
 }
+function closeShare(){document.getElementById('share-screen').style.display='none'}
 render();
 </script>
 </body>
